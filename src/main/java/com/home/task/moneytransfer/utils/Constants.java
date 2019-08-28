@@ -1,0 +1,30 @@
+package com.home.task.moneytransfer.utils;
+
+/**
+ * Contains constants for application.
+ */
+public class Constants {
+
+    private Constants() {
+    }
+
+    /**
+     * Port number for Http Server.
+     */
+    public static final int PORT = 8182;
+
+    /**
+     * Accounts context path.
+     */
+    public static final String CONTEXT_MONEYTRANSFER_ACCOUNTS = "/moneytransfer/accounts";
+
+    /**
+     * Transfers context path.
+     */
+    public static final String CONTEXT_MONEYTRANSFER_TRANSFERS = "/moneytransfer/transfers";
+
+    /**
+     * 'application/json' header value.
+     */
+    public static final String APPLICATION_JSON = "application/json";
+}

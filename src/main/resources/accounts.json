@@ -1,0 +1,102 @@
+[
+  {
+    "id": "0",
+    "name": "John",
+    "balance": 10
+  },
+  {
+    "id": "1",
+    "name": "Paul",
+    "balance": 10
+  },
+  {
+    "id": "2",
+    "name": "Fedor",
+    "balance": 10
+  },
+  {
+    "id": "3",
+    "name": "Jim",
+    "balance": 10
+  },
+  {
+    "id": "4",
+    "name": "Piotr",
+    "balance": 10
+  },
+  {
+    "id": "5",
+    "name": "Alice",
+    "balance": 10
+  },
+  {
+    "id": "6",
+    "name": "Maria",
+    "balance": 10
+  },
+  {
+    "id": "7",
+    "name": "Georg",
+    "balance": 10
+  },
+  {
+    "id": "8",
+    "name": "Agnieszka",
+    "balance": 10
+  },
+  {
+    "id": "9",
+    "name": "Michail",
+    "balance": 10
+  },
+  {
+    "id": "10",
+    "name": "Halina",
+    "balance": 10
+  },
+  {
+    "id": "11",
+    "name": "Ivan",
+    "balance": 10
+  },
+  {
+    "id": "12",
+    "name": "Potap",
+    "balance": 10
+  },
+  {
+    "id": "13",
+    "name": "Alex",
+    "balance": 10
+  },
+  {
+    "id": "14",
+    "name": "Dmitry",
+    "balance": 10
+  },
+  {
+    "id": "15",
+    "name": "Anton",
+    "balance": 10
+  },
+  {
+    "id": "16",
+    "name": "Harry",
+    "balance": 10
+  },
+  {
+    "id": "17",
+    "name": "Darth",
+    "balance": 10
+  },
+  {
+    "id": "18",
+    "name": "Vader",
+    "balance": 10
+  },
+  {
+    "id": "19",
+    "name": "Boris",
+    "balance": 10
+  }
+]
