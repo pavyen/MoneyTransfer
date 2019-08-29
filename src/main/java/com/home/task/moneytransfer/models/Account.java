@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 @Builder
 @Data
 public class Account {
-    @NonNull
     private String id;
     private String name;
     @NonNull

@@ -23,10 +23,12 @@ public class AccountsController extends AbstractController {
     public void initRouts(){
         Spark.get(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS + "/:id", (request, response) -> {
             response.status(HttpStatus.OK_200);
+            response.header(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
             return mapper.writeValueAsString(accountService.getAccount(request.params("id")));
         });
         Spark.post(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS, Constants.APPLICATION_JSON, (request, response) -> {
             response.status(HttpStatus.CREATED_201);
+            response.header(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
             return mapper.writeValueAsString(accountService.saveAccount(mapper.readValue(request.body(), Account.class)));
         });
     }

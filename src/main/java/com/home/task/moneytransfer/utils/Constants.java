@@ -27,4 +27,9 @@ public class Constants {
      * 'application/json' header value.
      */
     public static final String APPLICATION_JSON = "application/json";
+
+    /**
+     * Content-Type header name.
+     */
+    public static final String CONTENT_TYPE = "Content-Type";
 }
