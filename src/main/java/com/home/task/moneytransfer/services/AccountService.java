@@ -2,6 +2,8 @@ package com.home.task.moneytransfer.services;
 
 import com.home.task.moneytransfer.models.Account;
 
+import java.util.List;
+
 /**
  * Service to manipulate account data.
  */
@@ -14,6 +16,13 @@ public interface AccountService {
      * @return Account object.
      */
     Account getAccount(String id);
+
+    /**
+     * Returns accounts list from DataSource.
+     *
+     * @return Account object.
+     */
+    List<Account> getAccounts();
 
     /**
      * Save or update account.

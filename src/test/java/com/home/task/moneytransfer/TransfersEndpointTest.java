@@ -2,16 +2,16 @@ package com.home.task.moneytransfer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.home.task.moneytransfer.models.Account;
 import com.home.task.moneytransfer.models.MoneyTransferResponse;
 import com.home.task.moneytransfer.models.RequestError;
 import com.home.task.moneytransfer.models.Transaction;
 import com.home.task.moneytransfer.utils.Constants;
-import com.home.task.moneytransfer.validator.TransactionValidator;
+import com.home.task.moneytransfer.utils.ValidationConstants;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.eclipse.jetty.http.HttpStatus;
 import org.hamcrest.Matchers;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -20,24 +20,39 @@ import java.util.UUID;
 
 public class TransfersEndpointTest {
 
+    private static final String ID_FROM = UUID.randomUUID().toString();
+    private static final String ID_TO = UUID.randomUUID().toString();
     private final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeClass
     public static void startServer() {
         MoneyTransferApplication.initApplication();
         RestAssured.baseURI = String.format("http://localhost:%d/", Constants.PORT);
-    }
 
-    @AfterClass
-    public static void tearDown() {
-        MoneyTransferApplication.stopServer();
+        //Create test accounts.
+        Account account = Account.builder()
+                .id(ID_FROM)
+                .balance(BigDecimal.TEN)
+                .build();
+        RestAssured.given()
+                .body(account)
+                .when()
+                .post(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS);
+        account = Account.builder()
+                .id(ID_TO)
+                .balance(BigDecimal.TEN)
+                .build();
+        RestAssured.given()
+                .body(account)
+                .when()
+                .post(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS);
     }
 
     @Test
     public void testMakeTransfer_success() {
         final Transaction transaction = Transaction.builder()
-                .accountIdFrom("1")
-                .accountIdTo("2")
+                .accountIdFrom(ID_FROM)
+                .accountIdTo(ID_TO)
                 .amount(BigDecimal.TEN)
                 .build();
         RestAssured.given()
@@ -52,15 +67,15 @@ public class TransfersEndpointTest {
     @Test
     public void testMakeTransfer_fail_negativeNumber() throws JsonProcessingException {
         final Transaction transaction = Transaction.builder()
-                .accountIdFrom("1")
-                .accountIdTo("2")
+                .accountIdFrom(ID_FROM)
+                .accountIdTo(ID_TO)
                 .amount(BigDecimal.TEN.negate())
                 .build();
 
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(TransactionValidator.AMOUNT_SHOULD_BE_POSITIVE).build()
+                RequestError.builder().message(ValidationConstants.AMOUNT_SHOULD_BE_POSITIVE).build()
         );
 
         RestAssured.given()
@@ -77,15 +92,15 @@ public class TransfersEndpointTest {
     @Test
     public void testMakeTransfer_fail_notEnoughMoney() throws JsonProcessingException {
         final Transaction transaction = Transaction.builder()
-                .accountIdFrom("1")
-                .accountIdTo("2")
+                .accountIdFrom(ID_FROM)
+                .accountIdTo(ID_TO)
                 .amount(BigDecimal.valueOf(100000))
                 .build();
 
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(null).build()
+                RequestError.builder().message(ValidationConstants.AMOUNT_TO_TRANSFER_IS_GREATER_THAN_ACCOUNT_BALANCE).build()
         );
 
         RestAssured.given()
@@ -103,14 +118,14 @@ public class TransfersEndpointTest {
     public void testMakeTransfer_fail_accountNotExistAccountIdFrom() throws JsonProcessingException {
         final Transaction transaction = Transaction.builder()
                 .accountIdFrom("100000")
-                .accountIdTo("2")
+                .accountIdTo(ID_TO)
                 .amount(BigDecimal.TEN)
                 .build();
 
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(null).build()
+                RequestError.builder().message(ValidationConstants.WRONG_ACCOUNT_FROM_ID).build()
         );
 
         RestAssured.given()
@@ -127,7 +142,7 @@ public class TransfersEndpointTest {
     @Test
     public void testMakeTransfer_fail_accountNotExistAccountIdTo() throws JsonProcessingException {
         final Transaction transaction = Transaction.builder()
-                .accountIdFrom("1")
+                .accountIdFrom(ID_FROM)
                 .accountIdTo("200000")
                 .amount(BigDecimal.TEN)
                 .build();
@@ -135,7 +150,7 @@ public class TransfersEndpointTest {
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(null).build()
+                RequestError.builder().message(ValidationConstants.WRONG_ACCOUNT_TO_ID).build()
         );
 
         RestAssured.given()
@@ -152,15 +167,15 @@ public class TransfersEndpointTest {
     @Test
     public void testMakeTransfer_fail_accountsTheSame() throws JsonProcessingException {
         final Transaction transaction = Transaction.builder()
-                .accountIdFrom("1")
-                .accountIdTo("1")
+                .accountIdFrom(ID_FROM)
+                .accountIdTo(ID_FROM)
                 .amount(BigDecimal.TEN)
                 .build();
 
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(TransactionValidator.ACCOUNTS_SHOULD_BE_DIFFERENT).build()
+                RequestError.builder().message(ValidationConstants.ACCOUNTS_SHOULD_BE_DIFFERENT).build()
         );
 
         RestAssured.given()
@@ -183,7 +198,7 @@ public class TransfersEndpointTest {
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(TransactionValidator.ACCOUNT_ID_FROM_SHOULD_NOT_BE_BLANK).build()
+                RequestError.builder().message(ValidationConstants.ACCOUNT_ID_FROM_SHOULD_NOT_BE_BLANK).build()
         );
 
         RestAssured.given()
@@ -206,7 +221,7 @@ public class TransfersEndpointTest {
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(TransactionValidator.ACCOUNT_ID_TO_SHOULD_NOT_BE_BLANK).build()
+                RequestError.builder().message(ValidationConstants.ACCOUNT_ID_TO_SHOULD_NOT_BE_BLANK).build()
         );
 
         RestAssured.given()
@@ -229,7 +244,7 @@ public class TransfersEndpointTest {
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(TransactionValidator.AMOUNT_SHOULD_NOT_BE_NULL).build()
+                RequestError.builder().message(ValidationConstants.AMOUNT_SHOULD_NOT_BE_NULL).build()
         );
 
         RestAssured.given()

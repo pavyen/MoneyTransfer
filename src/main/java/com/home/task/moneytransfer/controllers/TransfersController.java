@@ -6,6 +6,7 @@ import com.home.task.moneytransfer.models.Transaction;
 import com.home.task.moneytransfer.services.TransferService;
 import com.home.task.moneytransfer.utils.Constants;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
 import spark.Response;
@@ -17,6 +18,7 @@ import java.io.IOException;
  * Controller to handle transfers endpoints.
  */
 @AllArgsConstructor
+@Slf4j
 public class TransfersController extends AbstractController {
 
     private TransferService transferService;
@@ -43,6 +45,7 @@ public class TransfersController extends AbstractController {
             moneyTransferResponse.setError(
                     RequestError.builder().message(ex.getMessage()).build()
             );
+            log.error(ex.getMessage(), ex);
         }
         return mapper.writeValueAsString(moneyTransferResponse);
     }

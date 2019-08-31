@@ -6,6 +6,8 @@ import com.home.task.moneytransfer.controllers.TransfersController;
 import com.home.task.moneytransfer.models.Account;
 import com.home.task.moneytransfer.repository.AccountDao;
 import com.home.task.moneytransfer.repository.TransactionDao;
+import com.home.task.moneytransfer.repository.impl.AccountDaoImpl;
+import com.home.task.moneytransfer.repository.impl.TransactionDaoImpl;
 import com.home.task.moneytransfer.services.AccountService;
 import com.home.task.moneytransfer.services.TransferService;
 import com.home.task.moneytransfer.services.impl.AccountServiceImpl;
@@ -16,11 +18,14 @@ import spark.Spark;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
 public class MoneyTransferApplication {
 
     private static final String ERROR_ON_LOADING_ACCOUNTS_LIST = "An error has occurred on loading Accounts list.";
+    private static boolean initialised = false;
 
     private static AccountService accountService;
 
@@ -36,17 +41,33 @@ public class MoneyTransferApplication {
      * Initialize application.
      */
     public static void initApplication() {
-        Spark.port(Constants.PORT);
-        initControllers();
-        log.info("Server is started.");
+        if (!initialised) {
+            Spark.port(Constants.PORT);
+
+            initControllers();
+            log.info("Server is started.");
+            initialised = true;
+        }
+    }
+
+    public static AccountService getAccountService() {
+        return accountService;
     }
 
     private static void initControllers() {
-        final AccountDao accountDao = null;
-        final TransactionDao transactionDao = null;
+        final Lock transactionLock = new ReentrantLock();
+        final AccountDao accountDao = new AccountDaoImpl();
+        final TransactionDao transactionDao = new TransactionDaoImpl();
 
-        accountService = new AccountServiceImpl(accountDao);
-        final TransferService transferService = new TransferServiceImpl(accountDao, transactionDao);
+        accountService = new AccountServiceImpl(
+                accountDao,
+                transactionLock
+        );
+        TransferService transferService = new TransferServiceImpl(
+                accountService,
+                transactionDao,
+                transactionLock
+        );
 
         final AccountsController accountsController = new AccountsController(accountService);
         final TransfersController transfersController = new TransfersController(transferService);
@@ -58,7 +79,7 @@ public class MoneyTransferApplication {
     /**
      * Initialize data.
      */
-    private static void initData() {
+    public static void initData() {
         if (accountService != null) {
             loadData();
         }
@@ -79,11 +100,4 @@ public class MoneyTransferApplication {
         }
     }
 
-    /**
-     * Stop HttpServer.
-     */
-    public static void stopServer() {
-        Spark.stop();
-        log.info("Server is stopped.");
-    }
 }

@@ -1,17 +1,28 @@
 package com.home.task.moneytransfer.services.impl;
 
+import com.home.task.moneytransfer.models.Account;
 import com.home.task.moneytransfer.models.Transaction;
-import com.home.task.moneytransfer.repository.AccountDao;
 import com.home.task.moneytransfer.repository.TransactionDao;
+import com.home.task.moneytransfer.services.AccountService;
 import com.home.task.moneytransfer.services.TransferService;
+import com.home.task.moneytransfer.utils.ValidationConstants;
 import com.home.task.moneytransfer.validator.TransactionValidator;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 
 @AllArgsConstructor
+@Slf4j
 public class TransferServiceImpl implements TransferService {
 
-    private AccountDao accountDao;
+    private AccountService accountService;
     private TransactionDao transactionDao;
+    private Lock reentrantLock;
 
     /**
      * Transfer money between accounts.
@@ -20,7 +31,8 @@ public class TransferServiceImpl implements TransferService {
      * @return result of transaction.
      */
     @Override
-    public boolean transferMoney(Transaction transaction) {
+    public boolean transferMoney(final Transaction transaction) {
+
         TransactionValidator.transactionIsNotNull()
                 .and(TransactionValidator.accountIdFromIsNotBlank())
                 .and(TransactionValidator.accountIdToIsNotBlank())
@@ -28,8 +40,36 @@ public class TransferServiceImpl implements TransferService {
                 .and(TransactionValidator.amountIsNotNull())
                 .and(TransactionValidator.amountIsPositive())
                 .apply(transaction);
+        //Start lock
+        reentrantLock.lock();
+        try {
+            final Account accountFrom = Optional.ofNullable(accountService.getAccount(transaction.getAccountIdFrom()))
+                    .orElseThrow(() -> new IllegalArgumentException(ValidationConstants.WRONG_ACCOUNT_FROM_ID));
+            final Account accountTo = Optional.ofNullable(accountService.getAccount(transaction.getAccountIdTo()))
+                    .orElseThrow(() -> new IllegalArgumentException(ValidationConstants.WRONG_ACCOUNT_TO_ID));
+            final BigDecimal amount = transaction.getAmount();
+            if (amount.compareTo(accountFrom.getBalance()) > 0) {
+                throw new IllegalArgumentException(ValidationConstants.AMOUNT_TO_TRANSFER_IS_GREATER_THAN_ACCOUNT_BALANCE);
+            }
 
+            //withdraw
+            accountFrom.withdraw(amount);
+            //deposit
+            accountTo.deposit(amount);
+            //set transaction date
+            transaction.setTransactionDate(LocalDateTime.now(ZoneOffset.UTC));
 
-        return false;
+            accountService.saveAccount(accountFrom);
+            accountService.saveAccount(accountTo);
+
+            final Transaction savedTransaction = transactionDao.create(transaction);
+            log.info("Transaction complete: {}", savedTransaction);
+
+        } finally {
+            reentrantLock.unlock();
+        }
+        //End lock
+
+        return true;
     }
 }

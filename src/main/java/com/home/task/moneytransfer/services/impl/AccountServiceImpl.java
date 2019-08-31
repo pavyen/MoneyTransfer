@@ -3,12 +3,17 @@ package com.home.task.moneytransfer.services.impl;
 import com.home.task.moneytransfer.models.Account;
 import com.home.task.moneytransfer.repository.AccountDao;
 import com.home.task.moneytransfer.services.AccountService;
+import com.home.task.moneytransfer.utils.ValidationConstants;
 import lombok.AllArgsConstructor;
+
+import java.util.List;
+import java.util.concurrent.locks.Lock;
 
 @AllArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
     private AccountDao accountDao;
+    private Lock reentrantLock;
 
     /**
      * Returns account from DataSource.
@@ -18,7 +23,27 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public Account getAccount(final String id) {
-        return null;
+        reentrantLock.lock();
+        try {
+            return accountDao.get(id);
+        } finally {
+            reentrantLock.unlock();
+        }
+    }
+
+    /**
+     * Returns accounts list from DataSource.
+     *
+     * @return Account object.
+     */
+    @Override
+    public List<Account> getAccounts() {
+        reentrantLock.lock();
+        try {
+            return accountDao.getAll();
+        } finally {
+            reentrantLock.unlock();
+        }
     }
 
     /**
@@ -28,6 +53,19 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public Account saveAccount(final Account account) {
-        return null;
+        if (account.getBalance() == null) {
+            throw new IllegalArgumentException(ValidationConstants.BALANCE_SHOULD_NOT_BE_NULL);
+        }
+        reentrantLock.lock();
+        try {
+            if (account.getId() != null) {
+                return accountDao.update(account);
+            } else {
+                return accountDao.create(account);
+            }
+        } finally {
+            reentrantLock.unlock();
+        }
     }
+
 }

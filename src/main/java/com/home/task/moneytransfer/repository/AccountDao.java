@@ -2,6 +2,8 @@ package com.home.task.moneytransfer.repository;
 
 import com.home.task.moneytransfer.models.Account;
 
+import java.util.List;
+
 /**
  * DAO to manipulate with Accounts in DataSource.
  */
@@ -16,6 +18,13 @@ public interface AccountDao {
     Account get(String id);
 
     /**
+     * Returns account list from DataSource.
+     *
+     * @return Account object.
+     */
+    List<Account> getAll();
+
+    /**
      * Create new Account entity in DataSource.
      * @param account Account object with data.
      * @return Account object created in DataSource.
@@ -28,4 +37,6 @@ public interface AccountDao {
      * @return Account object created in DataSource.
      */
     Account update(Account account);
+
+
 }

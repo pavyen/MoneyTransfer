@@ -1,6 +1,9 @@
 package com.home.task.moneytransfer.models;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
@@ -9,11 +12,17 @@ import java.math.BigDecimal;
  */
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Data
 public class Account {
     private String id;
-    private String name;
-    @NonNull
     private BigDecimal balance;
+
+    public void withdraw(final BigDecimal amount) {
+        this.balance = balance.subtract(amount);
+    }
+
+    public void deposit(final BigDecimal amount) {
+        this.balance = balance.add(amount);
+    }
 }
