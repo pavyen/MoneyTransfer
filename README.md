@@ -60,5 +60,5 @@ $ curl http://localhost:8182/moneytransfer/accounts/2
 - Junit test for Controllers/Services/DAO.
 - Add condition lock.
 
-##Notes
+## Notes
 Branch feature-read-write-lock contains implementation with ReadWriteLock but maven build had failed once.
