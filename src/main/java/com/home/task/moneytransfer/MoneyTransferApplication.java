@@ -55,9 +55,9 @@ public class MoneyTransferApplication {
     }
 
     private static void initControllers() {
+        final AccountDao accountDao = initAccountDataSource();
+        final TransactionDao transactionDao = initTransactionDataSource();
         final Lock transactionLock = new ReentrantLock();
-        final AccountDao accountDao = new AccountDaoImpl();
-        final TransactionDao transactionDao = new TransactionDaoImpl();
 
         accountService = new AccountServiceImpl(
                 accountDao,
@@ -74,6 +74,22 @@ public class MoneyTransferApplication {
 
         accountsController.initRouts();
         transfersController.initRouts();
+    }
+
+    /**
+     * This method initialize custom Transaction DataSource.
+     * @return TransactionDao implementation.
+     */
+    private static TransactionDao initTransactionDataSource() {
+        return new TransactionDaoImpl();
+    }
+
+    /**
+     * This method initialize custom Account DataSource.
+     * @return AccountDao implementation.
+     */
+    private static AccountDao initAccountDataSource() {
+        return new AccountDaoImpl();
     }
 
     /**
