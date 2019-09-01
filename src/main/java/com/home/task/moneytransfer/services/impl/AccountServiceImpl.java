@@ -8,12 +8,13 @@ import lombok.AllArgsConstructor;
 
 import java.util.List;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 @AllArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
     private AccountDao accountDao;
-    private Lock reentrantLock;
+    private ReadWriteLock reentrantLock;
 
     /**
      * Returns account from DataSource.
@@ -23,11 +24,12 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public Account getAccount(final String id) {
-        reentrantLock.lock();
+        Lock lock = reentrantLock.writeLock();
+        lock.lock();
         try {
             return accountDao.get(id);
         } finally {
-            reentrantLock.unlock();
+            lock.unlock();
         }
     }
 
@@ -38,11 +40,12 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public List<Account> getAccounts() {
-        reentrantLock.lock();
+        Lock lock = reentrantLock.readLock();
+        lock.lock();
         try {
             return accountDao.getAll();
         } finally {
-            reentrantLock.unlock();
+            lock.unlock();
         }
     }
 
@@ -56,15 +59,21 @@ public class AccountServiceImpl implements AccountService {
         if (account.getBalance() == null) {
             throw new IllegalArgumentException(ValidationConstants.BALANCE_SHOULD_NOT_BE_NULL);
         }
-        reentrantLock.lock();
+        Lock lock = null;
         try {
             if (account.getId() != null) {
+                lock = reentrantLock.writeLock();
+                lock.lock();
                 return accountDao.update(account);
             } else {
+                lock = reentrantLock.readLock();
+                lock.lock();
                 return accountDao.create(account);
             }
         } finally {
-            reentrantLock.unlock();
+            if (lock != null){
+                lock.unlock();
+            }
         }
     }
 
