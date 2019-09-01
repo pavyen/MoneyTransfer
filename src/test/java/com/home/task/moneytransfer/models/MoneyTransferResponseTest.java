@@ -21,9 +21,9 @@ public class MoneyTransferResponseTest {
         final MoneyTransferResponse clonedMoneyTransferResponse = new MoneyTransferResponse();
         clonedMoneyTransferResponse.setSuccess(true);
         clonedMoneyTransferResponse.setError(new RequestError(StringUtils.EMPTY));
-        Assert.assertEquals("Hash should be the same.", clonedMoneyTransferResponse.hashCode(), testMoneyTransferResponse.hashCode());
-        Assert.assertEquals("String representation should be the same.", clonedMoneyTransferResponse.toString(), testMoneyTransferResponse.toString());
-        Assert.assertTrue("Objects could be compared.", clonedMoneyTransferResponse.canEqual(testMoneyTransferResponse));
-        Assert.assertEquals("Objects should be equal.", clonedMoneyTransferResponse, testMoneyTransferResponse);
+        Assert.assertEquals(TestConstants.HASH_SHOULD_BE_THE_SAME, clonedMoneyTransferResponse.hashCode(), testMoneyTransferResponse.hashCode());
+        Assert.assertEquals(TestConstants.STRING_REPRESENTATION_SHOULD_BE_THE_SAME, clonedMoneyTransferResponse.toString(), testMoneyTransferResponse.toString());
+        Assert.assertTrue(TestConstants.OBJECTS_COULD_BE_COMPARED, clonedMoneyTransferResponse.canEqual(testMoneyTransferResponse));
+        Assert.assertEquals(TestConstants.OBJECTS_SHOULD_BE_EQUAL, clonedMoneyTransferResponse, testMoneyTransferResponse);
     }
 }

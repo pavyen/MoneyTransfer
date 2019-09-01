@@ -25,9 +25,9 @@ public class TransactionTest {
     @Test
     public void shouldGenerateMethods() {
         final Transaction clonedTransaction = testTransaction.toBuilder().build();
-        Assert.assertEquals("Hash should be the same.", clonedTransaction.hashCode(), testTransaction.hashCode());
-        Assert.assertEquals("String representation should be the same.", clonedTransaction.toString(), testTransaction.toString());
-        Assert.assertTrue("Objects could be compared.", clonedTransaction.canEqual(testTransaction));
-        Assert.assertEquals("Objects should be equal.", clonedTransaction, testTransaction);
+        Assert.assertEquals(TestConstants.HASH_SHOULD_BE_THE_SAME, clonedTransaction.hashCode(), testTransaction.hashCode());
+        Assert.assertEquals(TestConstants.STRING_REPRESENTATION_SHOULD_BE_THE_SAME, clonedTransaction.toString(), testTransaction.toString());
+        Assert.assertTrue(TestConstants.OBJECTS_COULD_BE_COMPARED, clonedTransaction.canEqual(testTransaction));
+        Assert.assertEquals(TestConstants.OBJECTS_SHOULD_BE_EQUAL, clonedTransaction, testTransaction);
     }
 }

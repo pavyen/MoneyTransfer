@@ -44,9 +44,9 @@ public class AccountTest {
     @Test
     public void shouldGenerateMethods() {
         final Account clonedAccount = testAccount.toBuilder().build();
-        Assert.assertEquals("Hash should be the same.", clonedAccount.hashCode(), testAccount.hashCode());
-        Assert.assertEquals("String representation should be the same.", clonedAccount.toString(), testAccount.toString());
-        Assert.assertTrue("Objects could be compared.", clonedAccount.canEqual(testAccount));
-        Assert.assertEquals("Objects should be equal.", clonedAccount, testAccount);
+        Assert.assertEquals(TestConstants.HASH_SHOULD_BE_THE_SAME, clonedAccount.hashCode(), testAccount.hashCode());
+        Assert.assertEquals(TestConstants.STRING_REPRESENTATION_SHOULD_BE_THE_SAME, clonedAccount.toString(), testAccount.toString());
+        Assert.assertTrue(TestConstants.OBJECTS_COULD_BE_COMPARED, clonedAccount.canEqual(testAccount));
+        Assert.assertEquals(TestConstants.OBJECTS_SHOULD_BE_EQUAL, clonedAccount, testAccount);
     }
 }
