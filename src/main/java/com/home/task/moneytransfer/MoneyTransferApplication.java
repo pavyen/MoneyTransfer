@@ -21,8 +21,11 @@ import java.io.InputStream;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * RESTful application for money transfers between accounts.
+ */
 @Slf4j
-public class MoneyTransferApplication {
+public final class MoneyTransferApplication {
 
     private static final String ERROR_ON_LOADING_ACCOUNTS_LIST = "An error has occurred on loading Accounts list.";
     private static boolean initialised = false;
@@ -32,7 +35,12 @@ public class MoneyTransferApplication {
     private MoneyTransferApplication() {
     }
 
-    public static void main(String[] args) {
+    /**
+     * Main method to start application.
+     *
+     * @param args arguments.
+     */
+    public static void main(final String[] args) {
         initApplication();
         initData();
     }
@@ -50,10 +58,18 @@ public class MoneyTransferApplication {
         }
     }
 
+    /**
+     * Getter for AccountService instance.
+     * Used to manipulate Account data in tests.
+     * @return AccountService instance.
+     */
     public static AccountService getAccountService() {
         return accountService;
     }
 
+    /**
+     * Create services instances and initialize Spark routes in controllers.
+     */
     private static void initControllers() {
         final AccountDao accountDao = initAccountDataSource();
         final TransactionDao transactionDao = initTransactionDataSource();

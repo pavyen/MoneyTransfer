@@ -20,7 +20,7 @@ public interface AccountDao {
     /**
      * Returns account list from DataSource.
      *
-     * @return Account object.
+     * @return Account objects list.
      */
     List<Account> getAll();
 
@@ -34,9 +34,8 @@ public interface AccountDao {
     /**
      * Save Account object to DataSource.
      * @param account Account object with data.
-     * @return Account object created in DataSource.
+     * @return Account object updated in DataSource.
      */
     Account update(Account account);
-
 
 }

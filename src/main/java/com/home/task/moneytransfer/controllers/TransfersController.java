@@ -27,26 +27,30 @@ public class TransfersController extends AbstractController {
      * Initialisation transfers routs.
      * Make transfer: /moneytransfer/transfers
      */
-    public void initRouts(){
+    public void initRouts() {
+        log.debug("Initialization transfers routs started.");
         Spark.post(Constants.CONTEXT_MONEYTRANSFER_TRANSFERS, Constants.APPLICATION_JSON, this::processMoneyTransferRequest);
+        log.debug("Initialization transfers routs finished.");
     }
 
     private String processMoneyTransferRequest(final Request request, final Response response) throws IOException {
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         try {
-            transferService.transferMoney(mapper.readValue(request.body(), Transaction.class));
-            response.status(HttpStatus.NO_CONTENT_204);
+            final Transaction transaction = getMapper().readValue(request.body(), Transaction.class);
+            transferService.transferMoney(transaction);
+            response.status(HttpStatus.CREATED_201);
             moneyTransferResponse.setSuccess(true);
+            log.debug("Transfer from account {} to account {} has completed.", transaction.getAccountIdFrom(), transaction.getAccountIdTo());
         } catch (IllegalArgumentException ex) {
             response.status(HttpStatus.BAD_REQUEST_400);
-            response.header(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
 
             moneyTransferResponse.setSuccess(false);
             moneyTransferResponse.setError(
-                    RequestError.builder().message(ex.getMessage()).build()
+                    new RequestError(ex.getMessage())
             );
             log.error(ex.getMessage(), ex);
         }
-        return mapper.writeValueAsString(moneyTransferResponse);
+        response.header(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
+        return getMapper().writeValueAsString(moneyTransferResponse);
     }
 }

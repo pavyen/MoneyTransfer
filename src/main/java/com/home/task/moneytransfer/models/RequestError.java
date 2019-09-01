@@ -1,10 +1,13 @@
 package com.home.task.moneytransfer.models;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Builder
+/**
+ *  Object to wrap operations errors.
+ */
 @Data
+@AllArgsConstructor
 public class RequestError {
     private String message;
 }

@@ -1,7 +1,8 @@
-package com.home.task.moneytransfer;
+package com.home.task.moneytransfer.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.home.task.moneytransfer.MoneyTransferApplication;
 import com.home.task.moneytransfer.models.Account;
 import com.home.task.moneytransfer.models.MoneyTransferResponse;
 import com.home.task.moneytransfer.models.RequestError;
@@ -18,7 +19,10 @@ import org.testng.annotations.Test;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public class TransfersEndpointTest {
+/**
+ * Test transfers controller routes.
+ */
+public class TransfersControllerTest {
 
     private static final String ID_FROM = UUID.randomUUID().toString();
     private static final String ID_TO = UUID.randomUUID().toString();
@@ -49,19 +53,23 @@ public class TransfersEndpointTest {
     }
 
     @Test
-    public void testMakeTransfer_success() {
+    public void testMakeTransfer_success() throws JsonProcessingException {
         final Transaction transaction = Transaction.builder()
                 .accountIdFrom(ID_FROM)
                 .accountIdTo(ID_TO)
                 .amount(BigDecimal.TEN)
                 .build();
+        final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
+        moneyTransferResponse.setSuccess(true);
         RestAssured.given()
                 .body(transaction)
                 .when()
                 .post(Constants.CONTEXT_MONEYTRANSFER_TRANSFERS)
                 .then()
                 .assertThat()
-                .statusCode(HttpStatus.NO_CONTENT_204);
+                .statusCode(HttpStatus.CREATED_201)
+                .contentType(ContentType.JSON)
+                .body(Matchers.equalTo(mapper.writeValueAsString(moneyTransferResponse)));
     }
 
     @Test
@@ -75,7 +83,7 @@ public class TransfersEndpointTest {
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(ValidationConstants.AMOUNT_SHOULD_BE_POSITIVE).build()
+                new RequestError(ValidationConstants.AMOUNT_SHOULD_BE_POSITIVE)
         );
 
         RestAssured.given()
@@ -94,13 +102,13 @@ public class TransfersEndpointTest {
         final Transaction transaction = Transaction.builder()
                 .accountIdFrom(ID_FROM)
                 .accountIdTo(ID_TO)
-                .amount(BigDecimal.valueOf(100000))
+                .amount(BigDecimal.valueOf(100))
                 .build();
 
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(ValidationConstants.AMOUNT_TO_TRANSFER_IS_GREATER_THAN_ACCOUNT_BALANCE).build()
+                new RequestError(ValidationConstants.AMOUNT_TO_TRANSFER_IS_GREATER_THAN_ACCOUNT_BALANCE)
         );
 
         RestAssured.given()
@@ -115,9 +123,9 @@ public class TransfersEndpointTest {
     }
 
     @Test
-    public void testMakeTransfer_fail_accountNotExistAccountIdFrom() throws JsonProcessingException {
+    public void testMakeTransfer_fail_accountNotExist_AccountIdFrom() throws JsonProcessingException {
         final Transaction transaction = Transaction.builder()
-                .accountIdFrom("100000")
+                .accountIdFrom("100")
                 .accountIdTo(ID_TO)
                 .amount(BigDecimal.TEN)
                 .build();
@@ -125,7 +133,7 @@ public class TransfersEndpointTest {
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(ValidationConstants.WRONG_ACCOUNT_FROM_ID).build()
+                new RequestError(ValidationConstants.WRONG_ACCOUNT_FROM_ID)
         );
 
         RestAssured.given()
@@ -140,17 +148,17 @@ public class TransfersEndpointTest {
     }
 
     @Test
-    public void testMakeTransfer_fail_accountNotExistAccountIdTo() throws JsonProcessingException {
+    public void testMakeTransfer_fail_accountNotExist_AccountIdTo() throws JsonProcessingException {
         final Transaction transaction = Transaction.builder()
                 .accountIdFrom(ID_FROM)
-                .accountIdTo("200000")
+                .accountIdTo("200")
                 .amount(BigDecimal.TEN)
                 .build();
 
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(ValidationConstants.WRONG_ACCOUNT_TO_ID).build()
+                new RequestError(ValidationConstants.WRONG_ACCOUNT_TO_ID)
         );
 
         RestAssured.given()
@@ -175,7 +183,7 @@ public class TransfersEndpointTest {
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(ValidationConstants.ACCOUNTS_SHOULD_BE_DIFFERENT).build()
+                new RequestError(ValidationConstants.ACCOUNTS_SHOULD_BE_DIFFERENT)
         );
 
         RestAssured.given()
@@ -191,14 +199,15 @@ public class TransfersEndpointTest {
 
     @Test
     public void testMakeTransfer_fail_accountIdFromIsNull() throws JsonProcessingException {
-        final Transaction transaction = new Transaction();
-        transaction.setAccountIdTo(UUID.randomUUID().toString());
-        transaction.setAmount(BigDecimal.TEN);
+        final Transaction transaction = Transaction.builder()
+                .accountIdTo(UUID.randomUUID().toString())
+                .amount(BigDecimal.TEN)
+                .build();
 
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(ValidationConstants.ACCOUNT_ID_FROM_SHOULD_NOT_BE_BLANK).build()
+                new RequestError(ValidationConstants.ACCOUNT_ID_FROM_SHOULD_NOT_BE_BLANK)
         );
 
         RestAssured.given()
@@ -214,14 +223,15 @@ public class TransfersEndpointTest {
 
     @Test
     public void testMakeTransfer_fail_accountIdToIsNull() throws JsonProcessingException {
-        final Transaction transaction = new Transaction();
-        transaction.setAccountIdFrom(UUID.randomUUID().toString());
-        transaction.setAmount(BigDecimal.TEN);
+        final Transaction transaction = Transaction.builder()
+                .accountIdFrom(UUID.randomUUID().toString())
+                .amount(BigDecimal.TEN)
+                .build();
 
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(ValidationConstants.ACCOUNT_ID_TO_SHOULD_NOT_BE_BLANK).build()
+                new RequestError(ValidationConstants.ACCOUNT_ID_TO_SHOULD_NOT_BE_BLANK)
         );
 
         RestAssured.given()
@@ -237,14 +247,15 @@ public class TransfersEndpointTest {
 
     @Test
     public void testMakeTransfer_fail_amountIsNull() throws JsonProcessingException {
-        final Transaction transaction = new Transaction();
-        transaction.setAccountIdFrom(UUID.randomUUID().toString());
-        transaction.setAccountIdTo(UUID.randomUUID().toString());
+        final Transaction transaction = Transaction.builder()
+                .accountIdFrom(UUID.randomUUID().toString())
+                .accountIdTo(UUID.randomUUID().toString())
+                .build();
 
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(ValidationConstants.AMOUNT_SHOULD_NOT_BE_NULL).build()
+                new RequestError(ValidationConstants.AMOUNT_SHOULD_NOT_BE_NULL)
         );
 
         RestAssured.given()

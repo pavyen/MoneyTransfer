@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
+/**
+ * Service to manipulate account data.
+ */
 @AllArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
@@ -24,6 +27,7 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public Account getAccount(final String id) {
+        //Lock is used because Account could be read for update during transaction.
         Lock lock = reentrantLock.writeLock();
         lock.lock();
         try {
@@ -36,16 +40,17 @@ public class AccountServiceImpl implements AccountService {
     /**
      * Returns accounts list from DataSource.
      *
-     * @return Account object.
+     * @return Accounts list.
      */
     @Override
     public List<Account> getAccounts() {
+        //Accounts list could be read during multiple transaction so data could not be actual.
         Lock lock = reentrantLock.readLock();
         lock.lock();
         try {
             return accountDao.getAll();
         } finally {
-            lock.unlock();
+            reentrantLock.unlock();
         }
     }
 

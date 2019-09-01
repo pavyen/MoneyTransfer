@@ -3,7 +3,7 @@ package com.home.task.moneytransfer.utils;
 /**
  * Contains constants for application.
  */
-public class Constants {
+public final class Constants {
 
     private Constants() {
     }
