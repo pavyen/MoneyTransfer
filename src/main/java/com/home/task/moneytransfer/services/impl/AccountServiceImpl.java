@@ -9,6 +9,9 @@ import lombok.AllArgsConstructor;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 
+/**
+ * Service to manipulate account data.
+ */
 @AllArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
@@ -23,6 +26,7 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public Account getAccount(final String id) {
+        //Lock is used because Account could be read for update during transaction.
         reentrantLock.lock();
         try {
             return accountDao.get(id);
@@ -34,10 +38,11 @@ public class AccountServiceImpl implements AccountService {
     /**
      * Returns accounts list from DataSource.
      *
-     * @return Account object.
+     * @return Accounts list.
      */
     @Override
     public List<Account> getAccounts() {
+        //Accounts list could be read during multiple transaction so data could not be actual.
         reentrantLock.lock();
         try {
             return accountDao.getAll();
@@ -56,15 +61,16 @@ public class AccountServiceImpl implements AccountService {
         if (account.getBalance() == null) {
             throw new IllegalArgumentException(ValidationConstants.BALANCE_SHOULD_NOT_BE_NULL);
         }
-        reentrantLock.lock();
-        try {
-            if (account.getId() != null) {
+
+        if (account.getId() != null) {
+            try {
+                reentrantLock.lock();
                 return accountDao.update(account);
-            } else {
-                return accountDao.create(account);
+            } finally {
+                reentrantLock.unlock();
             }
-        } finally {
-            reentrantLock.unlock();
+        } else {
+            return accountDao.create(account);
         }
     }
 

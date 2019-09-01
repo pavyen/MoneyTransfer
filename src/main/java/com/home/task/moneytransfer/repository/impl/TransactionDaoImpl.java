@@ -8,9 +8,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Implementation to manipulate with transactions. Java Map is used as Data Source.
+ */
 public class TransactionDaoImpl implements TransactionDao {
 
     private static final int INITIAL_CAPACITY = 20;
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private static final Map<String, Transaction> TRANSACTIONS = new HashMap<>(INITIAL_CAPACITY);
 
     /**

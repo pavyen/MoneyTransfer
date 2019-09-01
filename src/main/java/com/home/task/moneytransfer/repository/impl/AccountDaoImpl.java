@@ -6,6 +6,9 @@ import com.home.task.moneytransfer.repository.AccountDao;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation to manipulate with accounts. Java Map is used as Data Source.
+ */
 public class AccountDaoImpl implements AccountDao {
 
     private static final int INITIAL_CAPACITY = 20;
@@ -29,7 +32,7 @@ public class AccountDaoImpl implements AccountDao {
     /**
      * Returns account list from DataSource.
      *
-     * @return Account object.
+     * @return Accounts list.
      */
     @Override
     public List<Account> getAll() {
@@ -57,7 +60,7 @@ public class AccountDaoImpl implements AccountDao {
      * Save Account object to DataSource.
      *
      * @param sourceAccount Account object with data.
-     * @return Account object created in DataSource.
+     * @return Account object updated in DataSource.
      */
     @Override
     public Account update(final Account sourceAccount) {

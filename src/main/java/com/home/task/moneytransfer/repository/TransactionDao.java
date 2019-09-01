@@ -2,6 +2,9 @@ package com.home.task.moneytransfer.repository;
 
 import com.home.task.moneytransfer.models.Transaction;
 
+/**
+ * DAO to manipulate with Transactions in DataSource.
+ */
 public interface TransactionDao {
 
     /**

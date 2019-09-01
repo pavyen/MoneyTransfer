@@ -28,6 +28,7 @@ public interface AccountService {
      * Save or update account.
      *
      * @param account account value.
+     * @return Account object.
      */
     Account saveAccount(Account account);
 }

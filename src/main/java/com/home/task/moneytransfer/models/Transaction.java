@@ -21,5 +21,4 @@ public class Transaction {
     private String accountIdTo;
     private String id;
     private LocalDateTime transactionDate;
-
 }

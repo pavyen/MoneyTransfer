@@ -16,6 +16,9 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 
+/**
+ * Service for money transfer.
+ */
 @AllArgsConstructor
 @Slf4j
 public class TransferServiceImpl implements TransferService {
@@ -48,9 +51,6 @@ public class TransferServiceImpl implements TransferService {
             final Account accountTo = Optional.ofNullable(accountService.getAccount(transaction.getAccountIdTo()))
                     .orElseThrow(() -> new IllegalArgumentException(ValidationConstants.WRONG_ACCOUNT_TO_ID));
             final BigDecimal amount = transaction.getAmount();
-            if (amount.compareTo(accountFrom.getBalance()) > 0) {
-                throw new IllegalArgumentException(ValidationConstants.AMOUNT_TO_TRANSFER_IS_GREATER_THAN_ACCOUNT_BALANCE);
-            }
 
             //withdraw
             accountFrom.withdraw(amount);
@@ -64,12 +64,10 @@ public class TransferServiceImpl implements TransferService {
 
             final Transaction savedTransaction = transactionDao.create(transaction);
             log.info("Transaction complete: {}", savedTransaction);
-
         } finally {
             reentrantLock.unlock();
         }
         //End lock
-
         return true;
     }
 }

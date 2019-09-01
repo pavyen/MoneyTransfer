@@ -26,54 +26,65 @@ public class AccountsController extends AbstractController {
     private AccountService accountService;
 
     /**
-     * Initialisation accounts routs.
+     * Initialization accounts routs.
      * Return account by id:    /moneytransfer/accounts/:id
      * Return list of accounts: /moneytransfer/accounts
      */
-    public void initRouts(){
+    public void initRouts() {
+        log.debug("Initialization accounts routs started.");
         Spark.get(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS + "/:id", this::getAccount);
-        Spark.get(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS, this::getAccounts);
+        Spark.get(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS, (request, response) -> getAccounts(response));
         Spark.post(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS, Constants.APPLICATION_JSON, this::createAccount);
+        log.debug("Initialization accounts routs finished.");
     }
 
+    /**
+     * Return Account by given Id.
+     */
     private Object getAccount(final Request request, final Response response) throws JsonProcessingException {
-        final Account account = accountService.getAccount(request.params("id"));
+        final String accountId = request.params("id");
+        final Account account = accountService.getAccount(accountId);
         if (account != null) {
             response.status(HttpStatus.OK_200);
             response.header(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
-            return mapper.writeValueAsString(account);
+            log.debug("Account with id={} was found.", accountId);
+            return getMapper().writeValueAsString(account);
         }
         response.status(HttpStatus.NOT_FOUND_404);
+        log.debug("Account with id={} wasn't found.", accountId);
         return StringUtils.EMPTY;
     }
 
-    private Object getAccounts(final Request request, final Response response) throws JsonProcessingException {
+    private Object getAccounts(final Response response) throws JsonProcessingException {
         final List<Account> accounts = accountService.getAccounts();
         if (accounts != null && !accounts.isEmpty()) {
             response.status(HttpStatus.OK_200);
             response.header(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
-            return mapper.writeValueAsString(accounts);
+            log.debug("Found {} accounts.", accounts.size());
+            return getMapper().writeValueAsString(accounts);
         }
         response.status(HttpStatus.NOT_FOUND_404);
+        log.debug("No accounts was found.");
         return StringUtils.EMPTY;
     }
 
     private Object createAccount(final Request request, final Response response) throws java.io.IOException {
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         try {
-            accountService.saveAccount(mapper.readValue(request.body(), Account.class));
+            final Account account = accountService.saveAccount(getMapper().readValue(request.body(), Account.class));
             response.status(HttpStatus.CREATED_201);
             moneyTransferResponse.setSuccess(true);
+            log.debug("Account with id={} was created.", account.getId());
         } catch (IllegalArgumentException ex) {
             response.status(HttpStatus.BAD_REQUEST_400);
             response.header(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
 
             moneyTransferResponse.setSuccess(false);
             moneyTransferResponse.setError(
-                    RequestError.builder().message(ex.getMessage()).build()
+                    new RequestError(ex.getMessage())
             );
             log.error(ex.getMessage(), ex);
         }
-        return mapper.writeValueAsString(moneyTransferResponse);
+        return getMapper().writeValueAsString(moneyTransferResponse);
     }
 }

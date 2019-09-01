@@ -1,7 +1,8 @@
-package com.home.task.moneytransfer;
+package com.home.task.moneytransfer.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.home.task.moneytransfer.MoneyTransferApplication;
 import com.home.task.moneytransfer.models.Account;
 import com.home.task.moneytransfer.models.MoneyTransferResponse;
 import com.home.task.moneytransfer.models.RequestError;
@@ -11,14 +12,18 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.eclipse.jetty.http.HttpStatus;
 import org.hamcrest.Matchers;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
-public class AccountsEndpointTest {
+/**
+ * Test accounts controller routes.
+ */
+public class AccountsControllerTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -44,30 +49,15 @@ public class AccountsEndpointTest {
     }
 
     @Test
-    @Ignore
-    public void testCreateAccount_fail_idIsNull() {
-        final Account account = new Account();
-        account.setBalance(BigDecimal.TEN);
-        RestAssured.given()
-                .body(account)
-                .when()
-                .post(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS)
-                .then()
-                .assertThat()
-                .body(Matchers.equalTo(account))
-                .contentType(ContentType.JSON)
-                .statusCode(HttpStatus.BAD_REQUEST_400);
-    }
-
-    @Test
     public void testCreateAccount_fail_balanceIsNull() throws JsonProcessingException {
-        final Account account = new Account();
-        account.setId(UUID.randomUUID().toString());
+        final Account account = Account.builder()
+                .id(UUID.randomUUID().toString())
+                .build();
 
         final MoneyTransferResponse moneyTransferResponse = new MoneyTransferResponse();
         moneyTransferResponse.setSuccess(false);
         moneyTransferResponse.setError(
-                RequestError.builder().message(ValidationConstants.BALANCE_SHOULD_NOT_BE_NULL).build()
+                new RequestError(ValidationConstants.BALANCE_SHOULD_NOT_BE_NULL)
         );
         RestAssured.given()
                 .body(account)
@@ -113,4 +103,27 @@ public class AccountsEndpointTest {
                 .statusCode(HttpStatus.NOT_FOUND_404);
     }
 
+    @Test
+    public void testReadAccounts_exist() {
+        //Create test account.
+        final Account account = Account.builder()
+                .balance(BigDecimal.TEN)
+                .build();
+        RestAssured.given()
+                .body(account)
+                .when()
+                .post(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS);
+        //Read test accounts
+        final List response = RestAssured.given()
+                .when()
+                .get(Constants.CONTEXT_MONEYTRANSFER_ACCOUNTS)
+                .then()
+                .assertThat()
+                .contentType(ContentType.JSON)
+                .statusCode(HttpStatus.OK_200)
+                .extract()
+                .response()
+                .as(List.class);
+        Assert.assertFalse(response.isEmpty(), "Responce should not be empty.");
+    }
 }
