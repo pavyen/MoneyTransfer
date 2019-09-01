@@ -45,7 +45,7 @@ public class TransferServiceImpl implements TransferService {
                 .and(TransactionValidator.amountIsPositive())
                 .apply(transaction);
         //Start lock
-        Lock lock = reentrantLock.writeLock();
+        final Lock lock = reentrantLock.writeLock();
         lock.lock();
         try {
             final Account accountFrom = Optional.ofNullable(accountService.getAccount(transaction.getAccountIdFrom()))

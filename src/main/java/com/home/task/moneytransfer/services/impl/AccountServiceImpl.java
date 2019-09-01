@@ -28,7 +28,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account getAccount(final String id) {
         //Lock is used because Account could be read for update during transaction.
-        Lock lock = reentrantLock.writeLock();
+        final Lock lock = reentrantLock.writeLock();
         lock.lock();
         try {
             return accountDao.get(id);
@@ -45,12 +45,12 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<Account> getAccounts() {
         //Accounts list could be read during multiple transaction so data could not be actual.
-        Lock lock = reentrantLock.readLock();
+        final Lock lock = reentrantLock.readLock();
         lock.lock();
         try {
             return accountDao.getAll();
         } finally {
-            reentrantLock.unlock();
+            lock.unlock();
         }
     }
 
@@ -76,7 +76,7 @@ public class AccountServiceImpl implements AccountService {
                 return accountDao.create(account);
             }
         } finally {
-            if (lock != null){
+            if (lock != null) {
                 lock.unlock();
             }
         }
