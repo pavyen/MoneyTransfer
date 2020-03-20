@@ -25,7 +25,7 @@ public interface AccountService {
     List<Account> getAccounts();
 
     /**
-     * Save or update account.
+     * Create or update account.
      *
      * @param account account value.
      * @return Account object.

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 
 import java.util.List;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * Service to manipulate account data.
@@ -16,7 +17,7 @@ import java.util.concurrent.locks.Lock;
 public class AccountServiceImpl implements AccountService {
 
     private AccountDao accountDao;
-    private Lock reentrantLock;
+    private ReadWriteLock reentrantLock;
 
     /**
      * Returns account from DataSource.
@@ -27,11 +28,12 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account getAccount(final String id) {
         //Lock is used because Account could be read for update during transaction.
-        reentrantLock.lock();
+        final Lock lock = reentrantLock.writeLock();
+        lock.lock();
         try {
             return accountDao.get(id);
         } finally {
-            reentrantLock.unlock();
+            lock.unlock();
         }
     }
 
@@ -43,11 +45,12 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<Account> getAccounts() {
         //Accounts list could be read during multiple transaction so data could not be actual.
-        reentrantLock.lock();
+        final Lock lock = reentrantLock.readLock();
+        lock.lock();
         try {
             return accountDao.getAll();
         } finally {
-            reentrantLock.unlock();
+            lock.unlock();
         }
     }
 
@@ -61,16 +64,21 @@ public class AccountServiceImpl implements AccountService {
         if (account.getBalance() == null) {
             throw new IllegalArgumentException(ValidationConstants.BALANCE_SHOULD_NOT_BE_NULL);
         }
-
-        if (account.getId() != null) {
-            try {
-                reentrantLock.lock();
+        Lock lock = null;
+        try {
+            if (account.getId() != null) {
+                lock = reentrantLock.writeLock();
+                lock.lock();
                 return accountDao.update(account);
-            } finally {
-                reentrantLock.unlock();
+            } else {
+                lock = reentrantLock.readLock();
+                lock.lock();
+                return accountDao.create(account);
             }
-        } else {
-            return accountDao.create(account);
+        } finally {
+            if (lock != null) {
+                lock.unlock();
+            }
         }
     }
 

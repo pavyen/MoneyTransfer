@@ -18,8 +18,8 @@ import spark.Spark;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * RESTful application for money transfers between accounts.
@@ -73,7 +73,7 @@ public final class MoneyTransferApplication {
     private static void initControllers() {
         final AccountDao accountDao = initAccountDataSource();
         final TransactionDao transactionDao = initTransactionDataSource();
-        final Lock transactionLock = new ReentrantLock();
+        final ReadWriteLock transactionLock = new ReentrantReadWriteLock();
 
         accountService = new AccountServiceImpl(
                 accountDao,

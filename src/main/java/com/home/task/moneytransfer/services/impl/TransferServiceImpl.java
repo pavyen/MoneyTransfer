@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * Service for money transfer.
@@ -25,7 +26,7 @@ public class TransferServiceImpl implements TransferService {
 
     private AccountService accountService;
     private TransactionDao transactionDao;
-    private Lock reentrantLock;
+    private ReadWriteLock reentrantLock;
 
     /**
      * Transfer money between accounts.
@@ -44,7 +45,8 @@ public class TransferServiceImpl implements TransferService {
                 .and(TransactionValidator.amountIsPositive())
                 .apply(transaction);
         //Start lock
-        reentrantLock.lock();
+        final Lock lock = reentrantLock.writeLock();
+        lock.lock();
         try {
             final Account accountFrom = Optional.ofNullable(accountService.getAccount(transaction.getAccountIdFrom()))
                     .orElseThrow(() -> new IllegalArgumentException(ValidationConstants.WRONG_ACCOUNT_FROM_ID));
@@ -65,7 +67,7 @@ public class TransferServiceImpl implements TransferService {
             final Transaction savedTransaction = transactionDao.create(transaction);
             log.info("Transaction complete: {}", savedTransaction);
         } finally {
-            reentrantLock.unlock();
+            lock.unlock();
         }
         //End lock
         return true;
